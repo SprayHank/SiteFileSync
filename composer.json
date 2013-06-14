@@ -2,6 +2,11 @@
 	"name": "bozz/sitefilesync",
 	"description": "description_text",
 	"minimum-stability": "stable",
+	"homepage": "https://github.com/SprayHank/SiteFileSync",
+	"license": "LGPL-3.0",
+	"require": {
+		"php": ">=5.2"
+	},
 	"authors": [
 		{
 			"name": "author's name",
