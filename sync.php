@@ -1,4 +1,5 @@
 <?php
+define('SYNCSYSTEM', TRUE);
 require_once 'sync/functions.php';
 require_once 'sync/pclzip.class.php';
 $localdir = './';

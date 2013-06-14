@@ -1,4 +1,4 @@
-<?php
+<?php defined('SYNCSYSTEM') || die('No direct script access.');
 // +----------------------------------------------------------------------
 // | Copyright (C) 2008-2012 OSDU.Net    www.osdu.net    admin@osdu.net
 // +----------------------------------------------------------------------
@@ -255,5 +255,3 @@ function error_handler_fun($errno, $errmsg, $errfile, $errline, $errvars) {
 	}
 	error_log($err, 3, $destination);
 }
-
-?>

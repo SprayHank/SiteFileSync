@@ -1,4 +1,4 @@
-<?php
+<?php defined('SYNCSYSTEM') || die('No direct script access.');
 if(@$_GET['op']=='css'){
 ?>
 
