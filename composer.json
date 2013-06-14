@@ -1,0 +1,11 @@
+{
+	"name": "bozz/sitefilesync",
+	"description": "description_text",
+	"minimum-stability": "stable",
+	"authors": [
+		{
+			"name": "author's name",
+			"email": "fantasyoui@gmail.com"
+		}
+	]
+}
