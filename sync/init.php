@@ -2,11 +2,30 @@
 
 define('DIR', dirname(__FILE__));
 
-require_once DIR.'/SYNC.class.php';
-require_once DIR.'/functions.php';
-require_once 'sync/pclzip.class.php';
+spl_autoload_register('sync_autoload');
+function sync_autoload($class){
+	$cls = DIR.'/'.$class.'.class.php';
+	is_readable($cls) && require($cls);
+}
+
+
+//兼容转义字符处理
+set_magic_quotes_runtime(0);
+if(get_magic_quotes_gpc()) {
+	function stripslashes_deep($value) {
+		$value = is_array($value) ? array_map('stripslashes_deep', $value) : stripslashes($value);
+
+		return $value;
+	}
+
+	$_POST    = array_map('stripslashes_deep', $_POST);
+	$_GET     = array_map('stripslashes_deep', $_GET);
+	$_COOKIE  = array_map('stripslashes_deep', $_COOKIE);
+	$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
+}
+
 $localdir = './';
-require_once 'sync/config.php';
+require 'sync/config.php';
 
 $submit = '';
 if(@$_REQUEST['submit']) {
@@ -18,7 +37,7 @@ if(@$_REQUEST['operation']) {
 }
 
 if($operation == '' && $submit == '') {
-	exit($HTMLTemplate);
+	exit(SYNC::init_page());
 }
 
 if($operation != '') {
