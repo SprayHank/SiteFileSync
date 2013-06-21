@@ -22,8 +22,10 @@ class SYNC {
 		return '<script type="text/javascript">'.$script.'</script>';
 	}
 
-	public function init_feedback_control(){
+	public function end_print_feedback(string $elements){
 		$HTMLTemplate = self::$HTMLHEAD.self::$ENDHTMLHEAD;
+		$HTMLTemplate .= $elements.self::$ENDHTML;
+		exit($HTMLTemplate);
 	}
 
 	private function wrap_html_element(string $element){
