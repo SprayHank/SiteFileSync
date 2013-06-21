@@ -2,12 +2,195 @@
 
 class SYNC {
 	public static $CONFIG = array();
-	public static $HTMLHEAD = '<!DocType HTML><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
-	public static $HTMLTITLE = '<title>网站文件同步系统</title>';
-	public static $ENDHTMLHEAD = '</head><body>';
-	public static $ENDHTML = '</body></html>';
-	public static $HTMLCONTROLIFRAME = '<iframe name="controlFrame" style="display:none;"></iframe>';
-	public static $FILETYPE = array(
+	private static $HTMLHEAD = '<!DocType HTML><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+	private static $HTMLTITLE = '<title>网站文件同步系统</title>';
+	private static $ENDHTMLHEAD = '</head><body>';
+	private static $ENDHTML = '</body></html>';
+	private static $HTMLCONTROLIFRAME = '<iframe name="controlFrame" style="display:none;"></iframe>';
+
+	public function init_ignores(){
+		GLOBAL $IGNORES;
+		$IGNORES = '';
+		if(isset(self::$CONFIG['IGNORE_FILE_LIST'])){
+			$IGNORES =  implode('|', self::$CONFIG['IGNORE_FILE_LIST']);
+			$IGNORES = addcslashes($IGNORES, '.');
+			$IGNORES = strtr($IGNORES, array('?' => '.?', '*' => '.*'));
+			$IGNORES = '/^('.$IGNORES.')$/i';
+		}
+	}
+	public function print_script(string $script){
+		return '<script type="text/javascript">'.$script.'</script>';
+	}
+
+	public function init_feedback_control(){
+		$HTMLTemplate = self::$HTMLHEAD.self::$ENDHTMLHEAD;
+	}
+
+	private function wrap_html_element(string $element){
+		return '<div class="wrapper">'.$element.'</div>';
+	}
+
+	public function init_page(){
+		GLOBAL $IGNORES;
+
+		$HTMLTemplate = self::$HTMLHEAD.self::$HTMLTITLE.self::$ENDHTMLHEAD;
+		$HTMLTemplate .= '<div id="head_banner">'.self::wrap_html_element('<a class="home" href="sync.php">自开发（无鉴权）网站文件同步系统</a>').'</div>';
+
+		$HTMLTemplate .= <<<HTML
+<div class="wrapper">
+<div id="main">
+<iframe name="controlFrame" style="display:none;"></iframe>
+<form method="post" enctype="multipart/form-data" action="http://localhost/manage/" target="controlFrame">
+<input type="submit" name="do" value="显示远程文件" /><input type="submit" name="do" value="显示本地文件" />
+<br />
+当前忽略文件（正则）：<input type="text" name="ignores" value="$IGNORES" style="width: 600px;" disabled />
+<div id="displayRect"></div>
+<br/>
+<div id="firstStep" style="clear:both;">
+	<input type='button' value='反选' onclick='selrev();'>
+	<input type='button' value='测试' onclick='ssd()'>
+	<input type='hidden' name='operation' value='' />
+	<input type='text' name='list' style="width:400px;"/>
+	<input type="submit" name="do" value="upload" />
+	<input type="submit" name="do" value="dnload" />
+	<input type="submit" name="do" value="MD5 Compare" />
+</div>
+<script language='javascript'>
+	function selrev() {
+		with (document.myform) {
+			for (i = 0; i < elements.length; i++) {
+				var thiselm = elements[i];
+				if (thiselm.name.match(/includefiles\[\]/))    thiselm.checked = !thiselm.checked;
+			}
+		}
+	}
+	function ssd() {
+		with (document.myform) {
+			for (i = 0; i < elements.length; i++) {
+				var thiselm = elements[i];
+				if (thiselm.name.match(/includefiles\[\]/))    thiselm.indeterminate = !thiselm.indeterminate;
+			}
+		}
+	}
+</script>
+</form>
+</div>
+</div>
+<div id="footer"></div>
+<style>
+body{ margin: 0px; font-size:12px; background: #f4f4f4; font-family: '微软雅黑','MicroSoft YaHei'; }
+.wrapper { width: 1040px; margin: auto; }
+#head_banner{ background:#00a3e5; height:100px; border-bottom: 5px solid #e4e4e4; }
+.home { font-size: 30px; margin-top: 20px; font-weight: bold; text-decoration: none; color: #3a3a3a; display: inline-block; }
+#main { margin: 20px auto; border: 1px solid #9299b5; padding: 10px; -ms-border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; -o-border-radius: 10px; border-radius: 10px; }
+.exploreritem{ float:left; width:128px; height:128px; border:2px solid #777; text-aligin:center;  margin:7px; font-size:10px; }
+.exploreritem .submit{ width: 100%; height: 80px; background-repeat: no-repeat; background-position: center center; border: none; cursor:pointer; line-height:11; }
+.archive{background-image:url(../WebFTP/Static/icons/big/archive.png);}
+.asp{background-image:url(../WebFTP/Static/icons/big/asp.png);}
+.audio{background-image:url(../WebFTP/Static/icons/big/audio.png);}
+.authors{background-image:url(../WebFTP/Static/icons/big/authors.png);}
+.bin{background-image:url(../WebFTP/Static/icons/big/bin.png);}
+.bmp{background-image:url(../WebFTP/Static/icons/big/bmp.png);}
+.c{background-image:url(../WebFTP/Static/icons/big/c.png);}
+.calc{background-image:url(../WebFTP/Static/icons/big/calc.png);}
+.cd{background-image:url(../WebFTP/Static/icons/big/cd.png);}
+.copying{background-image:url(../WebFTP/Static/icons/big/copying.png);}
+.cpp{background-image:url(../WebFTP/Static/icons/big/cpp.png);}
+.css{background-image:url(../WebFTP/Static/icons/big/css.png);}
+.deb{background-image:url(../WebFTP/Static/icons/big/deb.png);}
+.default{background-image:url(../WebFTP/Static/icons/big/default.png);}
+.doc{background-image:url(../WebFTP/Static/icons/big/doc.png);}
+.draw{background-image:url(../WebFTP/Static/icons/big/draw.png);}
+.eps{background-image:url(../WebFTP/Static/icons/big/eps.png);}
+.exe{background-image:url(../WebFTP/Static/icons/big/exe.png);}
+.floder-home{background-image:url(../WebFTP/Static/icons/big/floder-home.png);}
+.floder-open{background-image:url(../WebFTP/Static/icons/big/floder-open.png);}
+.floder-page{background-image:url(../WebFTP/Static/icons/big/floder-page.png);}
+.floder-parent{background-image:url(../WebFTP/Static/icons/big/floder-parent.png);}
+.floder{background-image:url(../WebFTP/Static/icons/big/floder.png);}
+.gif{background-image:url(../WebFTP/Static/icons/big/gif.png);}
+.gzip{background-image:url(../WebFTP/Static/icons/big/gzip.png);}
+.h{background-image:url(../WebFTP/Static/icons/big/h.png);}
+.hpp{background-image:url(../WebFTP/Static/icons/big/hpp.png);}
+.html{background-image:url(../WebFTP/Static/icons/big/html.png);}
+.ico{background-image:url(../WebFTP/Static/icons/big/ico.png);}
+.image{background-image:url(../WebFTP/Static/icons/big/image.png);}
+.install{background-image:url(../WebFTP/Static/icons/big/install.png);}
+.java{background-image:url(../WebFTP/Static/icons/big/java.png);}
+.jpg{background-image:url(../WebFTP/Static/icons/big/jpg.png);}
+.js{background-image:url(../WebFTP/Static/icons/big/js.png);}
+.log{background-image:url(../WebFTP/Static/icons/big/log.png);}
+.makefile{background-image:url(../WebFTP/Static/icons/big/makefile.png);}
+.package{background-image:url(../WebFTP/Static/icons/big/package.png);}
+.pdf{background-image:url(../WebFTP/Static/icons/big/pdf.png);}
+.php{background-image:url(../WebFTP/Static/icons/big/php.png);}
+.playlist{background-image:url(../WebFTP/Static/icons/big/playlist.png);}
+.png{background-image:url(../WebFTP/Static/icons/big/png.png);}
+.pres{background-image:url(../WebFTP/Static/icons/big/pres.png);}
+.psd{background-image:url(../WebFTP/Static/icons/big/psd.png);}
+.py{background-image:url(../WebFTP/Static/icons/big/py.png);}
+.rar{background-image:url(../WebFTP/Static/icons/big/rar.png);}
+.rb{background-image:url(../WebFTP/Static/icons/big/rb.png);}
+.readme{background-image:url(../WebFTP/Static/icons/big/readme.png);}
+.rpm{background-image:url(../WebFTP/Static/icons/big/rpm.png);}
+.rss{background-image:url(../WebFTP/Static/icons/big/rss.png);}
+.rtf{background-image:url(../WebFTP/Static/icons/big/rtf.png);}
+.script{background-image:url(../WebFTP/Static/icons/big/script.png);}
+.source{background-image:url(../WebFTP/Static/icons/big/source.png);}
+.sql{background-image:url(../WebFTP/Static/icons/big/sql.png);}
+.tar{background-image:url(../WebFTP/Static/icons/big/tar.png);}
+.tex{background-image:url(../WebFTP/Static/icons/big/tex.png);}
+.text{background-image:url(../WebFTP/Static/icons/big/text.png);}
+.tiff{background-image:url(../WebFTP/Static/icons/big/tiff.png);}
+.unknown{background-image:url(../WebFTP/Static/icons/big/unknown.png);}
+.vcal{background-image:url(../WebFTP/Static/icons/big/vcal.png);}
+.video{background-image:url(../WebFTP/Static/icons/big/video.png);}
+.xml{background-image:url(../WebFTP/Static/icons/big/xml.png);}
+.zip{background-image:url(../WebFTP/Static/icons/big/zip.png);}
+.op{width:100px;}
+.disabled{color:#999;}
+.main { width:90%;margin:10px auto;border:1px solid #999; }
+.rline { height: 1px; background: #c1c1c1; width: 70%; margin: auto; }
+.splitline { height: 1px; background: #838383; margin: 10px auto; width: 75%; }
+#footer { height: 100px; background: #c6c6c6; }
+</style>
+<script>
+var fragment = document.createDocumentFragment();
+var HTMLs = '';
+function addUnmatchItem(path, doseNOTexist){
+	var htm = '';
+	htm += '<div class="main">文件：&nbsp;&nbsp; '+path+' &nbsp;&nbsp; '+(doseNOTexist != 'remote' ? doseNOTexist != 'local' ? '' : '本地不存在' : '远程不存在');
+	htm += '<div class="rline"></div>';
+	htm += '<div style="width:70%; margin:auto;">';
+	htm += '<input type="radio" onclick="window.scrollBy(0,50);" name="file['+path+']" value="dnload" '+(doseNOTexist=='remote' ? 'disabled': '')+' />下载';
+	htm += '<input type="radio" onclick="window.scrollBy(0,50);" name="file['+path+']" value="upload" '+(doseNOTexist=='local' ? 'disabled' : '')+' />上传';
+	htm += '<span style="float:right;">';
+	htm += '<input type="radio" onclick="window.scrollBy(0,50);" name="file['+path+']" value="ignore" />忽略';
+	htm += '<input type="radio" onclick="window.scrollBy(0,50);" name="file['+path+']" value="delete" />删除';
+	htm += '</span></div>'+'</div>';
+	HTMLs += htm;
+}
+
+function output(){
+	HTMLs = HTMLs+'<br />';
+	HTMLs += '<input type="submit" name="do" value="sync" />';
+	document.getElementById("firstStep").style.display="none";
+	document.getElementById("displayRect").innerHTML = HTMLs;
+}
+
+</script>
+HTML;
+		$HTMLTemplate .= self::$ENDHTML;
+		return $HTMLTemplate;
+	}
+
+	public function get_filetype(){
+
+	}
+
+
+
+	private static $FILETYPE = array(
 		'*'       => 'application/octet-stream',
 		'001'     => 'application/x-001',
 		'301'     => 'application/x-301',
@@ -379,181 +562,4 @@ class SYNC {
 		'xwd'     => 'application/x-xwd',
 		'zip'     => 'application/zip',
 	);
-
-	public function init_ignores(){
-		GLOBAL $IGNORES;
-		$IGNORES = '';
-		if(isset(self::$CONFIG['IGNORE_FILE_LIST'])){
-			$IGNORES =  implode('|', self::$CONFIG['IGNORE_FILE_LIST']);
-			$IGNORES = addcslashes($IGNORES, '.');
-			$IGNORES = strtr($IGNORES, array('?' => '.?', '*' => '.*'));
-			$IGNORES = '/^('.$IGNORES.')$/i';
-		}
-	}
-	public function print_script(string $script){
-		return '<script type="text/javascript">'.$script.'</script>';
-	}
-
-	public function init_page(){
-		GLOBAL $IGNORES;
-
-		$HTMLTemplate = '';
-		$HTMLTemplate .= self::$HTMLHEAD.self::$HTMLTITLE.self::$ENDHTMLHEAD;
-
-		$HTMLTemplate .= <<<HTML
-<div id="head_banner">
-<div class="wrapper">
-<a class="home" href="sync.php">自开发（无鉴权）网站文件同步系统</a>
-</div>
-</div>
-<div class="wrapper">
-<div id="main">
-<iframe name="controlFrame" style="display:none;"></iframe>
-<form method="post" enctype="multipart/form-data" action="http://localhost/manage/" target="controlFrame">
-<input type="submit" name="do" value="显示远程文件" /><input type="submit" name="do" value="显示本地文件" />
-<br />
-当前忽略文件（正则）：<input type="text" name="ignores" value="$IGNORES" style="width: 600px;" disabled />
-<div id="displayRect"></div>
-<br/>
-<div id="firstStep" style="clear:both;">
-	<input type='button' value='反选' onclick='selrev();'>
-	<input type='button' value='测试' onclick='ssd()'>
-	<input type='hidden' name='operation' value='' />
-	<input type='text' name='list' style="width:400px;"/>
-	<input type="submit" name="do" value="upload">
-	<input type="submit" name="do" value="dnload">
-	<input type="submit" name="do" value="MD5 Compare">
-</div>
-<script language='javascript'>
-	function selrev() {
-		with (document.myform) {
-			for (i = 0; i < elements.length; i++) {
-				var thiselm = elements[i];
-				if (thiselm.name.match(/includefiles\[\]/))    thiselm.checked = !thiselm.checked;
-			}
-		}
-	}
-	function ssd() {
-		with (document.myform) {
-			for (i = 0; i < elements.length; i++) {
-				var thiselm = elements[i];
-				if (thiselm.name.match(/includefiles\[\]/))    thiselm.indeterminate = !thiselm.indeterminate;
-			}
-		}
-	}
-</script>
-</form>
-</div>
-</div>
-<div id="footer"></div>
-<style>
-body{ margin: 0px; font-size:12px; background: #f4f4f4; font-family: '微软雅黑','MicroSoft YaHei'; }
-.wrapper { width: 1040px; margin: auto; }
-#head_banner{ background:#00a3e5; height:100px; border-bottom: 5px solid #e4e4e4; }
-.home { font-size: 30px; margin-top: 20px; font-weight: bold; text-decoration: none; color: #3a3a3a; display: inline-block; }
-#main { margin: 20px auto; border: 1px solid #9299b5; padding: 10px; -ms-border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; -o-border-radius: 10px; border-radius: 10px; }
-.exploreritem{ float:left; width:128px; height:128px; border:2px solid #777; text-aligin:center;  margin:7px; font-size:10px; }
-.exploreritem .submit{ width: 100%; height: 80px; background-repeat: no-repeat; background-position: center center; border: none; cursor:pointer; line-height:11; }
-.archive{background-image:url(../WebFTP/Static/icons/big/archive.png);}
-.asp{background-image:url(../WebFTP/Static/icons/big/asp.png);}
-.audio{background-image:url(../WebFTP/Static/icons/big/audio.png);}
-.authors{background-image:url(../WebFTP/Static/icons/big/authors.png);}
-.bin{background-image:url(../WebFTP/Static/icons/big/bin.png);}
-.bmp{background-image:url(../WebFTP/Static/icons/big/bmp.png);}
-.c{background-image:url(../WebFTP/Static/icons/big/c.png);}
-.calc{background-image:url(../WebFTP/Static/icons/big/calc.png);}
-.cd{background-image:url(../WebFTP/Static/icons/big/cd.png);}
-.copying{background-image:url(../WebFTP/Static/icons/big/copying.png);}
-.cpp{background-image:url(../WebFTP/Static/icons/big/cpp.png);}
-.css{background-image:url(../WebFTP/Static/icons/big/css.png);}
-.deb{background-image:url(../WebFTP/Static/icons/big/deb.png);}
-.default{background-image:url(../WebFTP/Static/icons/big/default.png);}
-.doc{background-image:url(../WebFTP/Static/icons/big/doc.png);}
-.draw{background-image:url(../WebFTP/Static/icons/big/draw.png);}
-.eps{background-image:url(../WebFTP/Static/icons/big/eps.png);}
-.exe{background-image:url(../WebFTP/Static/icons/big/exe.png);}
-.floder-home{background-image:url(../WebFTP/Static/icons/big/floder-home.png);}
-.floder-open{background-image:url(../WebFTP/Static/icons/big/floder-open.png);}
-.floder-page{background-image:url(../WebFTP/Static/icons/big/floder-page.png);}
-.floder-parent{background-image:url(../WebFTP/Static/icons/big/floder-parent.png);}
-.floder{background-image:url(../WebFTP/Static/icons/big/floder.png);}
-.gif{background-image:url(../WebFTP/Static/icons/big/gif.png);}
-.gzip{background-image:url(../WebFTP/Static/icons/big/gzip.png);}
-.h{background-image:url(../WebFTP/Static/icons/big/h.png);}
-.hpp{background-image:url(../WebFTP/Static/icons/big/hpp.png);}
-.html{background-image:url(../WebFTP/Static/icons/big/html.png);}
-.ico{background-image:url(../WebFTP/Static/icons/big/ico.png);}
-.image{background-image:url(../WebFTP/Static/icons/big/image.png);}
-.install{background-image:url(../WebFTP/Static/icons/big/install.png);}
-.java{background-image:url(../WebFTP/Static/icons/big/java.png);}
-.jpg{background-image:url(../WebFTP/Static/icons/big/jpg.png);}
-.js{background-image:url(../WebFTP/Static/icons/big/js.png);}
-.log{background-image:url(../WebFTP/Static/icons/big/log.png);}
-.makefile{background-image:url(../WebFTP/Static/icons/big/makefile.png);}
-.package{background-image:url(../WebFTP/Static/icons/big/package.png);}
-.pdf{background-image:url(../WebFTP/Static/icons/big/pdf.png);}
-.php{background-image:url(../WebFTP/Static/icons/big/php.png);}
-.playlist{background-image:url(../WebFTP/Static/icons/big/playlist.png);}
-.png{background-image:url(../WebFTP/Static/icons/big/png.png);}
-.pres{background-image:url(../WebFTP/Static/icons/big/pres.png);}
-.psd{background-image:url(../WebFTP/Static/icons/big/psd.png);}
-.py{background-image:url(../WebFTP/Static/icons/big/py.png);}
-.rar{background-image:url(../WebFTP/Static/icons/big/rar.png);}
-.rb{background-image:url(../WebFTP/Static/icons/big/rb.png);}
-.readme{background-image:url(../WebFTP/Static/icons/big/readme.png);}
-.rpm{background-image:url(../WebFTP/Static/icons/big/rpm.png);}
-.rss{background-image:url(../WebFTP/Static/icons/big/rss.png);}
-.rtf{background-image:url(../WebFTP/Static/icons/big/rtf.png);}
-.script{background-image:url(../WebFTP/Static/icons/big/script.png);}
-.source{background-image:url(../WebFTP/Static/icons/big/source.png);}
-.sql{background-image:url(../WebFTP/Static/icons/big/sql.png);}
-.tar{background-image:url(../WebFTP/Static/icons/big/tar.png);}
-.tex{background-image:url(../WebFTP/Static/icons/big/tex.png);}
-.text{background-image:url(../WebFTP/Static/icons/big/text.png);}
-.tiff{background-image:url(../WebFTP/Static/icons/big/tiff.png);}
-.unknown{background-image:url(../WebFTP/Static/icons/big/unknown.png);}
-.vcal{background-image:url(../WebFTP/Static/icons/big/vcal.png);}
-.video{background-image:url(../WebFTP/Static/icons/big/video.png);}
-.xml{background-image:url(../WebFTP/Static/icons/big/xml.png);}
-.zip{background-image:url(../WebFTP/Static/icons/big/zip.png);}
-.op{width:100px;}
-.disabled{color:#999;}
-.main { width:90%;margin:10px auto;border:1px solid #999; }
-.rline { height: 1px; background: #c1c1c1; width: 70%; margin: auto; }
-.splitline { height: 1px; background: #838383; margin: 10px auto; width: 75%; }
-#footer { height: 100px; background: #c6c6c6; }
-</style>
-<script>
-var fragment = document.createDocumentFragment();
-var HTMLs = '';
-function addUnmatchItem(path, doseNOTexist){
-	var htm = '';
-	htm += '<div class="main">文件：&nbsp;&nbsp; '+path+' &nbsp;&nbsp; '+(doseNOTexist != 'remote' ? doseNOTexist != 'local' ? '' : '本地不存在' : '远程不存在');
-	htm += '<div class="rline"></div>';
-	htm += '<div style="width:70%; margin:auto;">';
-	htm += '<input type="radio" onclick="window.scrollBy(0,50);" name="file['+path+']" value="dnload" '+(doseNOTexist=='remote' ? 'disabled': '')+' />下载';
-	htm += '<input type="radio" onclick="window.scrollBy(0,50);" name="file['+path+']" value="upload" '+(doseNOTexist=='local' ? 'disabled' : '')+' />上传';
-	htm += '<span style="float:right;">';
-	htm += '<input type="radio" onclick="window.scrollBy(0,50);" name="file['+path+']" value="ignore" />忽略';
-	htm += '<input type="radio" onclick="window.scrollBy(0,50);" name="file['+path+']" value="delete" />删除';
-	htm += '</span></div>'+'</div>';
-	HTMLs += htm;
-}
-
-function output(){
-	HTMLs = HTMLs+'<br />';
-	HTMLs += '<input type="submit" name="do" value="sync" />';
-	document.getElementById("firstStep").style.display="none";
-	document.getElementById("displayRect").innerHTML = HTMLs;
-}
-
-</script>
-HTML;
-		$HTMLTemplate .= self::$ENDHTML;
-		return $HTMLTemplate;
-	}
-
-	public function get_filetype(){
-
-	}
 }
