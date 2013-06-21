@@ -2,33 +2,33 @@
 
 class SYNC {
 	public static $CONFIG = array();
+	public static $HTMLHEAD = '<!DocType HTML><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+	public static $HTMLTITLE = '<title>网站文件同步系统</title>';
+	public static $ENDHTMLHEAD = '</head><body>';
+	public static $ENDHTML = '</body></html>';
+	public static $HTMLCONTROLIFRAME = '<iframe name="controlFrame" style="display:none;"></iframe>';
 
 	public function init_ignores(){
-		//asd
 		GLOBAL $IGNORES;
 		$IGNORES = '';
-		if(isset($CONFIG['IGNORE_FILE_LIST'])){
-			$IGNORES =  implode('|', $CONFIG['IGNORE_FILE_LIST']);
+		if(isset(self::$CONFIG['IGNORE_FILE_LIST'])){
+			$IGNORES =  implode('|', self::$CONFIG['IGNORE_FILE_LIST']);
 			$IGNORES = addcslashes($IGNORES, '.');
 			$IGNORES = strtr($IGNORES, array('?' => '.?', '*' => '.*'));
 			$IGNORES = '/^('.$IGNORES.')$/i';
 		}
 	}
-	public function start_script(){
-
-		$javascriptHTML = <<<HTML
-<script>
-HTML;
-		return $javascriptHTML;
+	public function print_script(string $script){
+		return '<script type="text/javascript">'.$script.'</script>';
 	}
 
 	public function init_page(){
+		GLOBAL $IGNORES;
 
-		$HTMLTemplate = <<<HTML
-<!DocType HTML>
-<html><head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-</head><body>
+		$HTMLTemplate = '';
+		$HTMLTemplate .= self::$HTMLHEAD.self::$HTMLTITLE.self::$ENDHTMLHEAD;
+
+		$HTMLTemplate .= <<<HTML
 <div id="head_banner">
 <div class="wrapper">
 <a class="home" href="sync.php">自开发（无鉴权）网站文件同步系统</a>
@@ -36,14 +36,12 @@ HTML;
 </div>
 <div class="wrapper">
 <div id="main">
+<iframe name="controlFrame" style="display:none;"></iframe>
 <form method="post" enctype="multipart/form-data" action="http://localhost/manage/sync.php" target="controlFrame">
-<input type="submit" name="do" value="显示远程文件" />
-<input type="submit" name="do" value="显示本地文件" />
+<input type="submit" name="do" value="显示远程文件" /><input type="submit" name="do" value="显示本地文件" />
 <br />
 当前忽略文件（正则）：<input type="text" name="ignores" value="$IGNORES" style="width: 600px;" disabled />
-<div id="displayRect">
-</div>
-<iframe name="controlFrame" style="display:none;"></iframe>
+<div id="displayRect"></div>
 <br/>
 <div id="firstStep" style="clear:both;">
 	<input type='button' value='反选' onclick='selrev();'>
@@ -76,10 +74,7 @@ HTML;
 </div>
 </div>
 <div id="footer"></div>
-</body>
 <style>
-
-
 body{ margin: 0px; font-size:12px; background: #f4f4f4; font-family: '微软雅黑','MicroSoft YaHei'; }
 .wrapper { width: 1040px; margin: auto; }
 #head_banner{ background:#00a3e5; height:100px; border-bottom: 5px solid #e4e4e4; }
@@ -87,7 +82,6 @@ body{ margin: 0px; font-size:12px; background: #f4f4f4; font-family: '微软雅�
 #main { margin: 20px auto; border: 1px solid #9299b5; padding: 10px; -ms-border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; -o-border-radius: 10px; border-radius: 10px; }
 .exploreritem{ float:left; width:128px; height:128px; border:2px solid #777; text-aligin:center;  margin:7px; font-size:10px; }
 .exploreritem .submit{ width: 100%; height: 80px; background-repeat: no-repeat; background-position: center center; border: none; cursor:pointer; line-height:11; }
-
 .archive{background-image:url(../WebFTP/Static/icons/big/archive.png);}
 .asp{background-image:url(../WebFTP/Static/icons/big/asp.png);}
 .audio{background-image:url(../WebFTP/Static/icons/big/audio.png);}
@@ -182,8 +176,8 @@ function output(){
 }
 
 </script>
-</html>
 HTML;
+		$HTMLTemplate .= self::$ENDHTML;
 		return $HTMLTemplate;
 	}
 
