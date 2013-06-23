@@ -18,17 +18,17 @@ class SYNC {
 			$IGNORES = '/^('.$IGNORES.')$/i';
 		}
 	}
-	public function print_script(string $script){
+	public function print_script($script){
 		return '<script type="text/javascript">'.$script.'</script>';
 	}
 
-	public function end_print_feedback(string $elements){
+	public function end_print_feedback($elements){
 		$HTMLTemplate = self::$HTMLHEAD.self::$ENDHTMLHEAD;
 		$HTMLTemplate .= $elements.self::$ENDHTML;
 		exit($HTMLTemplate);
 	}
 
-	private function wrap_html_element(string $element){
+	private function wrap_html_element($element){
 		return '<div class="wrapper">'.$element.'</div>';
 	}
 
@@ -42,7 +42,7 @@ class SYNC {
 <div class="wrapper">
 <div id="main">
 <iframe name="controlFrame" style="display:none;"></iframe>
-<form method="post" enctype="multipart/form-data" action="http://localhost/manage/" target="controlFrame">
+<form method="post" enctype="multipart/form-data" action="http://localhost/Sync/" target="controlFrame">
 <input type="submit" name="do" value="显示远程文件" /><input type="submit" name="do" value="显示本地文件" />
 <br />
 当前忽略文件（正则）：<input type="text" name="ignores" value="$IGNORES" style="width: 600px;" disabled />
