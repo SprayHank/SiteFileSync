@@ -9,8 +9,8 @@ function sync_autoload($class) {
 }
 
 //兼容转义字符处理
-set_magic_quotes_runtime(0);
-if(get_magic_quotes_gpc()) {
+version_compare(PHP_VERSION, '5.3') < 0 && set_magic_quotes_runtime(0);
+if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 	function stripslashes_deep($value) {
 		$value = is_array($value) ? array_map('stripslashes_deep', $value) : stripslashes($value);
 
