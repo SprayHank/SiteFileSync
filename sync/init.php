@@ -3,11 +3,10 @@
 define('DIR', dirname(__FILE__));
 
 spl_autoload_register('sync_autoload');
-function sync_autoload($class){
+function sync_autoload($class) {
 	$cls = DIR.'/'.$class.'.class.php';
-	is_readable($cls) && require($cls);
+	is_file($cls) && is_readable($cls) && require($cls);//目标为文件（非目录），可读，载入
 }
-
 
 //兼容转义字符处理
 set_magic_quotes_runtime(0);
@@ -26,20 +25,22 @@ if(get_magic_quotes_gpc()) {
 
 $localdir = './';
 require 'sync/config.php';
-
+SYNC::init_ignores();
+GLOBAL $IGNORES;
 $submit = '';
-if(@$_REQUEST['submit']) {
-	$submit = $_REQUEST['submit'];
-}
+isset($_REQUEST['submit']) && $submit = $_REQUEST['submit'];
 $operation = '';
-if(@$_REQUEST['operation']) {
-	$operation = $_REQUEST['operation'];
-}
+isset($_REQUEST['operation']) && $operation = $_REQUEST['operation'];
+$do = '';
+isset($_REQUEST['do']) && $do = $_REQUEST['do'];
 
 if($operation == '' && $submit == '') {
 	exit(SYNC::init_page());
 }
 
+if($do == 'MD5 Compare') {
+	exit('asljafalkfjlla');
+}
 if($operation != '') {
 	if($operation == 'md5') {
 		$ignorelist = file_get_contents('./sync/ignorelist.txt');
@@ -118,7 +119,7 @@ if($operation != '') {
 			if($list) {
 				info($Zip);
 				echo <<<FOM
-<form id="pull" action="http://localhost/manage/sync.php?operation=pulltolocal" method="post" enctype="multipart/form-data">
+<form id="pull" action="http://localhost/Sync/index.php?operation=pulltolocal" method="post" enctype="multipart/form-data">
 <input type='hidden' name='talkingSite' value='tryanderror.cn' />
 <br />
 </form>
@@ -167,7 +168,7 @@ FOM;
 		echo '<br />dnload:'.implode('<br />dnload:', $dnload);
 		echo '<br />delete:'.implode('<br />delete:', $delete);
 		ECHO <<<HTML
-<form action="http://localhost/manage/sync.php?operation=md5checkedsync" method="post">
+<form action="http://localhost/Sync/index.php?operation=md5checkedsync" method="post">
 HTML;
 		foreach($upload as $item) {
 			echo "\n".'<input type="hidden" name="upload[]" value="'.$item.'" />';
@@ -189,7 +190,7 @@ if(@!$_REQUEST['submit']) {
 	}
 	echo $head;
 	echo <<<HTM
-选择要压缩的文件或目录：<a href="http://localhost/manage/sync.php">浏览本地文件</a><br>
+选择要压缩的文件或目录：<a href="http://localhost/Sync/index.php">浏览本地文件</a><br>
 <form name="myform" method="post" action="$_SERVER[PHP_SELF]">
 HTM;
 
@@ -245,7 +246,7 @@ HTM;
 	//fclose($fp);
 	plusHTML("<br>校验完成,共添加 $filenum 个文件.<br>");
 	echo <<<FOM
-parent.document.getElementsByTagName('FORM')[0].action = "http://localhost/manage/sync.php?operation=md5ResultToLocal";
+parent.document.getElementsByTagName('FORM')[0].action = "http://localhost/Sync/index.php?operation=md5ResultToLocal";
 
 
 FOM;
@@ -257,7 +258,7 @@ FOM;
 	}
 	packfiles(array_merge(explode(' ', @$_REQUEST['list']), $_REQUEST['includefiles']));
 	echo <<<FOM
-<form action="http://localhost/manage/sync.php?operation=messagetopick" method="post" enctype="multipart/form-data">
+<form action="http://localhost/Sync/index.php?operation=messagetopick" method="post" enctype="multipart/form-data">
 <label for="file">Filename:</label>
 <br />
 <input type="submit" name="submit" value="Submit" />
