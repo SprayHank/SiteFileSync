@@ -1,3 +1,3 @@
 <?php
 define('SYNCSYSTEM', TRUE);
-include('./sync/init.php');
+require('./sync/init.php');
