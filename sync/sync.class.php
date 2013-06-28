@@ -1,38 +1,188 @@
 <?php defined('SYNCSYSTEM') || die('No direct script access.');
 
 class SYNC {
+
 	public static $CONFIG = array();
 	private static $HTMLHEAD = '<!DocType HTML><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
 	private static $HTMLTITLE = '<title>网站文件同步系统</title>';
 	private static $ENDHTMLHEAD = '</head><body>';
 	private static $ENDHTML = '</body></html>';
-	private static $HTMLCONTROLIFRAME = '<iframe name="controlFrame" style="display:none;"></iframe>';
 
-	public function init_ignores(){
+
+
+	public static function init_ignores() {
 		GLOBAL $IGNORES;
 		$IGNORES = '';
-		if(isset(self::$CONFIG['IGNORE_FILE_LIST'])){
-			$IGNORES =  implode('|', self::$CONFIG['IGNORE_FILE_LIST']);
+		if(isset(self::$CONFIG['IGNORE_FILE_LIST'])) {
+			$IGNORES = implode('|', self::$CONFIG['IGNORE_FILE_LIST']);
 			$IGNORES = addcslashes($IGNORES, '.');
 			$IGNORES = strtr($IGNORES, array('?' => '.?', '*' => '.*'));
 			$IGNORES = '/^('.$IGNORES.')$/i';
 		}
 	}
-	public function print_script($script){
+
+
+
+	public static function print_script($script) {
 		return '<script type="text/javascript">'.$script.'</script>';
 	}
 
-	public function end_print_feedback($elements){
+
+
+	public function end_print_feedback($elements) {
 		$HTMLTemplate = self::$HTMLHEAD.self::$ENDHTMLHEAD;
 		$HTMLTemplate .= $elements.self::$ENDHTML;
 		exit($HTMLTemplate);
 	}
 
-	private function wrap_html_element($element){
+
+
+	private static function MD5_Checksum($realdir) {
+		$dir = g2u(str_replace(LOCAL_DIR, '', $realdir));
+		if($_POST['file'][$dir] != '') {
+			if(md5_file($realdir) != $_POST['file'][$dir]) {
+				unset($_POST['file'][$dir]);
+
+				return ("parent.addUnmatchItem('$dir', false);");
+			}
+			unset($_POST['file'][$dir]);
+		} else {
+			return ("parent.addUnmatchItem('$dir', 'local');");
+		}
+	}
+
+
+
+	private static function MD5_Verify($realdir) {
+		$dir = g2u(str_replace(LOCAL_DIR, '', $realdir));
+
+		return '<input type="hidden" name="file['.$dir.']" value="'.md5_file($realdir).'" />'."\n";
+	}
+
+
+
+	private static function listfiles($dir = ".", $callback = NULL) {
+		GLOBAL $sublevel, $fp, $IGNORES;
+		$return  = '';
+		$dir     = preg_replace('/^\.\//i', '', $dir); //删除“当前文件夹”起始指示符
+		$realdir = LOCAL_DIR.$dir;
+		if(is_file("$realdir")) {
+			//fwrite($fp, md5_file($realdir) . ' *' . $dir."\n");
+			return (method_exists('SYNC', $callback) ? call_user_func_array(array('SYNC', $callback), array($realdir)) : NULL);
+
+		}
+
+		if($handle = @opendir("$realdir")) {
+			$sublevel++;
+			while($file = readdir($handle)) {
+				if($file == '.' || $file == '..' || preg_match($IGNORES, $file)) continue;
+				$return .= self::listfiles("$dir/$file", $callback);
+			}
+			closedir($handle);
+			$sublevel--;
+		}
+
+		return $return;
+	}
+
+
+
+	public static function after_MD5_Compare_on_local() {
+		echo $javascriptHTML;
+		$filenum  = 0;
+		$sublevel = 0;
+		if(!@$_REQUEST['includefiles']) {
+			$_REQUEST['includefiles'] = array();
+		} else {
+			$_REQUEST['includefiles'] = @unserialize($_REQUEST['includefiles']);
+		}
+		$list = array_merge(explode(' ', @$_REQUEST['list']), $_REQUEST['includefiles']);
+
+
+		foreach($list as $file) {
+			$filenum += listfiles($file);
+		}
+		if(count($_POST['file'])) {
+			foreach($_POST['file'] as $file => $md5) {
+				echo("parent.addUnmatchItem('$file', 'remote');");
+			}
+		}
+		exit('parent.output();</script>');
+	}
+
+
+
+	public static function MD5_Compare($targetList) {
+		//		$fp = fopen('./md5.xml', 'w');
+		//		fwrite($fp, '');
+		//		fclose($fp);
+		//		$fp = fopen('./md5.xml', 'a');
+		$hiddenform = '';
+
+		$filenum  = 0;
+		$sublevel = 0;
+
+		foreach($targetList as $file) {
+			$hiddenform .= self::listfiles($file, 'MD5_Verify');
+		}
+
+		//$includefiles = serialize($includefiles);
+
+		//$package->createfile();
+		//fclose($fp);
+		return $hiddenform;
+	}
+
+
+
+	public static function _sync() { //这个居然是构造函数？？？只能在前面加下划线
+
+		$upload = $dnload = $delete = array();
+		foreach($_POST['file'] as $file => $option) {
+			switch($option) {
+				case 'ignore':
+					$ignorelist = file_get_contents($localdir.'./sync/ignorelist.txt');
+					if(!in_array($file, explode("\n", $ignorelist))) {
+						$fp = fopen($localdir.'./sync/ignorelist.txt', 'a');
+						fwrite($fp, "\n$file");
+						fclose($fp);
+					}
+					break;
+				case 'upload':
+					$upload[] = $file;
+					break;
+				case 'dnload':
+					$dnload[] = $file;
+					//echo '<input type="hidden" name="dnload[]" value="' . $file . '" />';
+					break;
+				case 'delete':
+					//@unlink(u2g($localdir.$file));
+					$delete[] = $file;
+					//echo '<input type="hidden" name="delete[]" value="' . $file . '" />';
+					break;
+			}
+			$op = $option.'[]';
+			$hiddenform .= "<input type='hidden' name='$op' value='$file' />\n";
+		}
+		$hiddenform .= "<input type='hidden' name='operation' value='md5checkedsync' />";
+		if(count($upload)) {
+			packfiles($upload);
+			$package = realpath('package.zip');
+			$data    = array('file' => "@$package");
+			$res     = curlrequest("http://$SessionSite/sync.php?operation=push", $data);
+			echo($res);
+		}
+	}
+
+
+
+	private function wrap_html_element($element) {
 		return '<div class="wrapper">'.$element.'</div>';
 	}
 
-	public function init_page(){
+
+
+	public function init_page() {
 		GLOBAL $IGNORES;
 
 		$HTMLTemplate = self::$HTMLHEAD.self::$HTMLTITLE.self::$ENDHTMLHEAD;
@@ -42,7 +192,7 @@ class SYNC {
 <div class="wrapper">
 <div id="main">
 <iframe name="controlFrame" style="display:none;"></iframe>
-<form method="post" enctype="multipart/form-data" action="http://localhost/Sync/" target="controlFrame">
+<form method="post" enctype="multipart/form-data" action="http://localhost/manage/" target="controlFrame">
 <input type="submit" name="do" value="显示远程文件" /><input type="submit" name="do" value="显示本地文件" />
 <br />
 当前忽略文件（正则）：<input type="text" name="ignores" value="$IGNORES" style="width: 600px;" disabled />
@@ -62,7 +212,7 @@ class SYNC {
 		with (document.myform) {
 			for (i = 0; i < elements.length; i++) {
 				var thiselm = elements[i];
-				if (thiselm.name.match(/includefiles\[\]/))    thiselm.checked = !thiselm.checked;
+				if(thiselm.name.match(/includefiles\[\]/))thiselm.checked = !thiselm.checked;
 			}
 		}
 	}
@@ -70,7 +220,7 @@ class SYNC {
 		with (document.myform) {
 			for (i = 0; i < elements.length; i++) {
 				var thiselm = elements[i];
-				if (thiselm.name.match(/includefiles\[\]/))    thiselm.indeterminate = !thiselm.indeterminate;
+				if(thiselm.name.match(/includefiles\[\]/))thiselm.indeterminate = !thiselm.indeterminate;
 			}
 		}
 	}
@@ -183,10 +333,13 @@ function output(){
 </script>
 HTML;
 		$HTMLTemplate .= self::$ENDHTML;
+
 		return $HTMLTemplate;
 	}
 
-	public function get_filetype(){
+
+
+	public function get_filetype() {
 
 	}
 
