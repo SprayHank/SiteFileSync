@@ -192,7 +192,7 @@ class SYNC {
 <div class="wrapper">
 <div id="main">
 <iframe name="controlFrame" style="display:none;"></iframe>
-<form method="post" enctype="multipart/form-data" action="http://localhost/manage/" target="controlFrame">
+<form method="post" enctype="multipart/form-data" action="http://localhost/Sync/" target="controlFrame">
 <input type="submit" name="do" value="显示远程文件" /><input type="submit" name="do" value="显示本地文件" />
 <br />
 当前忽略文件（正则）：<input type="text" name="ignores" value="$IGNORES" style="width: 600px;" disabled />
