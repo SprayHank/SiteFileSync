@@ -86,20 +86,15 @@ class SYNC {
 
 
 
-	public static function after_MD5_Compare_on_local() {
+	public static function after_MD5_Compare_on_local($targetList) {
 		echo $javascriptHTML;
 		$filenum  = 0;
 		$sublevel = 0;
-		if(!@$_REQUEST['includefiles']) {
-			$_REQUEST['includefiles'] = array();
-		} else {
-			$_REQUEST['includefiles'] = @unserialize($_REQUEST['includefiles']);
-		}
-		$list = array_merge(explode(' ', @$_REQUEST['list']), $_REQUEST['includefiles']);
+		$hiddenform = '';
 
 
-		foreach($list as $file) {
-			$filenum += listfiles($file);
+		foreach($targetList as $file) {
+			$hiddenform .= self::listfiles($file, 'MD5_Verify');
 		}
 		if(count($_POST['file'])) {
 			foreach($_POST['file'] as $file => $md5) {
