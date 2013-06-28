@@ -38,9 +38,6 @@ if($operation == '' && $submit == '') {
 	exit(SYNC::init_page());
 }
 
-if($do == 'MD5 Compare') {
-	exit('asljafalkfjlla');
-}
 if($operation != '') {
 	if($operation == 'md5') {
 		$ignorelist = file_get_contents('./sync/ignorelist.txt');
