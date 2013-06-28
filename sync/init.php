@@ -1,9 +1,17 @@
 <?php defined('SYNCSYSTEM') || die('No direct script access.');
-
+//
+//
+//
+//
+//
+//
+//
+//
+//
 spl_autoload_register('sync_autoload');
 function sync_autoload($class) {
 	$cls = dirname(__FILE__).'/class/'.$class.'.class.php';
-	is_file($cls) && is_readable($cls) && require($cls);//目标为文件（非目录），可读，载入
+	is_file($cls) && is_readable($cls) && require($cls); //目标为文件（非目录），可读，载入
 }
 
 //兼容转义字符处理
@@ -20,9 +28,7 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 	$_COOKIE  = array_map('stripslashes_deep', $_COOKIE);
 	$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
 }
-
-$localdir = './';
-require 'sync/config.php';
+require './config.php';
 SYNC::init_ignores();
 GLOBAL $IGNORES;
 $submit = '';
@@ -31,16 +37,18 @@ $operation = '';
 isset($_REQUEST['operation']) && $operation = $_REQUEST['operation'];
 $do = '';
 isset($_REQUEST['do']) && $do = $_REQUEST['do'];
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 if($operation == '' && $submit == '') {
 	exit(SYNC::init_page());
 }
 
+$localdir = './';
 if($operation != '') {
 	$includefiles = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
-	$list = isset($_REQUEST['list']) ? str_replace('"', '',str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
-	$listArray = explode(' ', $list);
-	$targetList = array_merge($listArray, $includefiles);
+	$list         = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
+	$listArray    = explode(' ', $list);
+	$targetList   = array_merge($listArray, $includefiles);
 	if($operation == 'md5') {
 		$ignorelist = file_get_contents('./sync/ignorelist.txt');
 		$ignorelist = explode("\n", trim($ignorelist));
