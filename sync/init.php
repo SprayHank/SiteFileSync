@@ -38,17 +38,37 @@ isset($_REQUEST['operation']) && $operation = $_REQUEST['operation'];
 $do = '';
 isset($_REQUEST['do']) && $do = $_REQUEST['do'];
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-if($operation == '' && $submit == '') {
-	exit(SYNC::init_page());
-}
-
-$localdir = './';
+$operation == '' && $submit == '' && exit(SYNC::init_page());
 if($operation != '') {
 	$includefiles = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
 	$list         = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
 	$listArray    = explode(' ', $list);
 	$targetList   = array_merge($listArray, $includefiles);
+	switch($operation){
+		case 'after MD5 Compare on local':
+			$func       = str_replace(' ', '_', $do);
+			$hiddenform = call_user_func_array(array('SYNC', $func), array($targetList));
+			break;
+		default:
+			exit('Unkonwn operation');
+			break;
+	}
+	exit;
+	$includefilesHiddenform = '';
+	while($includefile = $includefiles){
+		$includefilesHiddenform .= "<input type='hidden' name='includefiles[]' value='$includefile' />";
+	}
+	echo <<<FOM
+		\n
+<form action="http://$SessionSite/sync.php" method="post" enctype="multipart/form-data">
+<input type="hidden" name="operation" value="after $do on local" />
+<input type="hidden" name="list" value="$list" />
+$includefilesHiddenform
+$hiddenform
+</form>
+<script type="text/javascript">document.getElementsByTagName('FORM')[0].submit();</script>
+FOM;
+	exit;
 	if($operation == 'md5') {
 		$ignorelist = file_get_contents('./sync/ignorelist.txt');
 		$ignorelist = explode("\n", trim($ignorelist));
@@ -86,6 +106,7 @@ FOM;
 			}
 		}
 		exit;
+		$localdir     = './';
 	} elseif($operation == 'push') {
 		catchthepackage();
 		exit('OK');
