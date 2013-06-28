@@ -46,7 +46,7 @@ if($operation != '') {
 	$targetList   = array_merge($listArray, $includefiles);
 	switch($operation){
 		case 'after MD5 Compare on local':
-			$func       = str_replace(' ', '_', $do);
+			$func       = str_replace(' ', '_', $operation);
 			$hiddenform = call_user_func_array(array('SYNC', $func), array($targetList));
 			break;
 		default:
