@@ -39,24 +39,23 @@ class SYNC {
 
 	private static function MD5_Checksum($realdir) {
 		$dir = g2u(str_replace(LOCAL_DIR, '', $realdir));
-		if($_POST['file'][$dir] != '') {
-			if(md5_file($realdir) != $_POST['file'][$dir]) {
-				unset($_POST['file'][$dir]);
 
-				return ("parent.addUnmatchItem('$dir', false);");
-			}
-			unset($_POST['file'][$dir]);
-		} else {
-			return ("parent.addUnmatchItem('$dir', 'local');");
-		}
+		return '<input type="hidden" name="file['.$dir.']" value="'.md5_file($realdir).'" />'."\n";
 	}
 
 
 
 	private static function MD5_Verify($realdir) {
 		$dir = g2u(str_replace(LOCAL_DIR, '', $realdir));
-
-		return '<input type="hidden" name="file['.$dir.']" value="'.md5_file($realdir).'" />'."\n";
+		if($_POST['file'][$dir] != '') {
+			$md5 = $_POST['file'][$dir];
+			unset($_POST['file'][$dir]);
+			if(md5_file($realdir) != $md5) {
+				return ("parent.addUnmatchItem('$dir', false);");
+			}
+		} else {
+			return ("parent.addUnmatchItem('$dir', 'local');");
+		}
 	}
 
 
@@ -123,7 +122,7 @@ class SYNC {
 		$sublevel = 0;
 
 		foreach($targetList as $file) {
-			$hiddenform .= self::listfiles($file, 'MD5_Verify');
+			$hiddenform .= self::listfiles($file, 'MD5_Checksum');
 		}
 
 		//$includefiles = serialize($includefiles);
