@@ -4,7 +4,7 @@ define('DIR', dirname(__FILE__));
 
 spl_autoload_register('sync_autoload');
 function sync_autoload($class) {
-	$cls = DIR.'/'.$class.'.class.php';
+	$cls = './class/'.$class.'.class.php';
 	is_file($cls) && is_readable($cls) && require($cls);//目标为文件（非目录），可读，载入
 }
 
