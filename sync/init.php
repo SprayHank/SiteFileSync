@@ -28,7 +28,7 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 	$_COOKIE  = array_map('stripslashes_deep', $_COOKIE);
 	$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
 }
-require './config.php';
+require dirname(__FILE__).'/config.php';
 SYNC::init_ignores();
 GLOBAL $IGNORES;
 $submit = '';
