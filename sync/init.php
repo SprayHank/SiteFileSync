@@ -20,6 +20,7 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 	function stripslashes_deep($value) {
 		return (is_array($value) ? array_map('stripslashes_deep', $value) : stripslashes($value));
 	}
+
 	$_POST    = array_map('stripslashes_deep', $_POST);
 	$_GET     = array_map('stripslashes_deep', $_GET);
 	$_COOKIE  = array_map('stripslashes_deep', $_COOKIE);
@@ -37,23 +38,16 @@ isset($_REQUEST['do']) && $do = $_REQUEST['do'];
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 $operation == '' && $submit == '' && exit(Sync::init_page());
 if($operation != '') {
+	in_array($operation, array('after MD5 Compare on local', 'push')) || exit('Unkonwn operation');
 	$includefiles = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
 	$list         = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
 	$listArray    = explode(' ', $list);
 	$targetList   = array_merge($listArray, $includefiles);
-	switch($operation){
-		case 'after MD5 Compare on local':
-		case 'push':
-			$func       = str_replace(' ', '_', $operation);
-			$hiddenform = call_user_func_array(array('Sync', $func), array($targetList));
-			break;
-		default:
-			exit('Unkonwn operation');
-			break;
-	}
+	$func         = str_replace(' ', '_', $operation);
+	$hiddenform   = call_user_func_array(array('Sync', $func), array($targetList));
 	exit;
 	$includefilesHiddenform = '';
-	while($includefile = $includefiles){
+	while($includefile = $includefiles) {
 		$includefilesHiddenform .= "<input type='hidden' name='includefiles[]' value='$includefile' />";
 	}
 	echo <<<FOM
@@ -104,7 +98,7 @@ FOM;
 			}
 		}
 		exit;
-		$localdir     = './';
+		$localdir = './';
 	} elseif($operation == 'push') {
 
 	} elseif($operation == 'unzip') {
@@ -324,7 +318,6 @@ function packfiles($files) {
 		exit ($localdir."package.zip 不能写入,请检查路径或权限是否正确.<br>");
 	}
 }
-
 
 
 function dounzip() {
