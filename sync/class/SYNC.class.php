@@ -7,6 +7,7 @@ class SYNC {
 	private static $HTMLTITLE = '<title>网站文件同步系统</title>';
 	private static $ENDHTMLHEAD = '</head><body>';
 	private static $ENDHTML = '</body></html>';
+	private static $FILES = array();
 
 
 
@@ -48,14 +49,21 @@ class SYNC {
 	private static function MD5_Verify($realdir) {
 		$dir = g2u(str_replace(LOCAL_DIR, '', $realdir));
 		if($_POST['file'][$dir] != '') {
-			$md5 = $_POST['file'][$dir];
-			unset($_POST['file'][$dir]);
-			if(md5_file($realdir) != $md5) {
+			if(md5_file($realdir) != $_POST['file'][$dir]) {
+				unset($_POST['file'][$dir]);
+
 				return ("parent.addUnmatchItem('$dir', false);");
 			}
+			unset($_POST['file'][$dir]);
 		} else {
 			return ("parent.addUnmatchItem('$dir', 'local');");
 		}
+	}
+
+
+
+	private static function push_list($realdir) {
+		array_push(self::$FILES, "$realdir");
 	}
 
 
@@ -86,11 +94,41 @@ class SYNC {
 
 
 
+	public static function push() {
+		self::catchthepackage();
+		exit('OK');
+	}
+
+
+
+	private static function catchthepackage() {
+		global $_FILES;
+		if($_FILES["file"]["error"] > 0) {
+			echo "Return Code: ".$_FILES["file"]["error"]."<br />";
+		} else {
+			echo '<br />';
+			echo "Upload: ".$_FILES["file"]["name"]."<br />";
+			echo "Type: ".$_FILES["file"]["type"]."<br />";
+			echo "Size: ".($_FILES["file"]["size"] / 1024)." Kb<br />";
+			echo "Temp file: ".$_FILES["file"]["tmp_name"]."<br />";
+
+			if(file_exists("upload/".$_FILES["file"]["name"])) {
+				echo $_FILES["file"]["name"]." already exists. ";
+			} else {
+				move_uploaded_file($_FILES["file"]["tmp_name"], "./".$_FILES["file"]["name"]);
+				echo "Stored in: "."./".$_FILES["file"]["name"].'<br />';
+
+				dounzip();
+			}
+		}
+	}
+
+
+
 	public static function after_MD5_Compare_on_local($targetList) {
-		echo $javascriptHTML;
-		$filenum  = 0;
-		$sublevel = 0;
-		$hiddenform = '';
+		$filenum    = 0;
+		$sublevel   = 0;
+		$hiddenform = $javascriptHTML;
 
 
 		foreach($targetList as $file) {
@@ -98,10 +136,62 @@ class SYNC {
 		}
 		if(count($_POST['file'])) {
 			foreach($_POST['file'] as $file => $md5) {
-				echo("parent.addUnmatchItem('$file', 'remote');");
+				$hiddenform .= ("parent.addUnmatchItem('$file', 'remote');");
 			}
 		}
-		exit('parent.output();</script>');
+		$hiddenform .= 'parent.output();';
+		exit(self::print_script($hiddenform));
+	}
+
+
+
+	public static function upload($targetList) {
+		GLOBAL $SessionSite;
+		self::packfiles($targetList);
+		$package = realpath('package.zip');
+		$data    = array('file' => "@$package");
+		$res     = curlrequest("http://$SessionSite/sync.php?operation=push", $data);
+		echo($res);
+	}
+
+
+
+	private static function packfiles($files) {
+		$Zip = new PclZip('./package.zip');
+		//$_REQUEST['includefiles'] = array('./xwb.php', './userapp.php');
+		self::$FILES = array();
+
+		foreach($files as $file) {
+			self::listfiles($file, 'push_list');
+		}
+		//print_r($_files);
+		$Zip->create(self::$FILES, PCLZIP_OPT_REMOVE_PATH, LOCAL_DIR);
+		$list = $Zip->listContent();
+		if($list) {
+			$fold       = 0;
+			$fil        = 0;
+			$tot_comp   = 0;
+			$tot_uncomp = 0;
+			foreach($list as $key => $val) {
+				if($val['folder'] == '1') {
+					++$fold;
+				} else {
+					++$fil;
+					$tot_comp += $val['compressed_size'];
+					$tot_uncomp += $val['size'];
+				}
+			}
+			$message = '<font color="green">压缩目标文件：</font><font color="red"> '.'package.zip'.'</font><br />';
+			$message .= '<font color="green">压缩文件详情：</font><font color="red">共'.$fold.' 个目录，'.$fil.' 个文件</font><br />';
+			$message .= '<font color="green">压缩文档大小：</font><font color="red">'.dealsize($tot_comp).'</font><br />';
+			$message .= '<font color="green">解压文档大小：</font><font color="red">'.dealsize($tot_uncomp).'</font><br />';
+			//$message .= '<font color="green">压缩执行耗时：</font><font color="red">' . G('_run_start', '_run_end', 6) . ' 秒</font><br />';
+			echo $message;
+
+
+		} else {
+			exit (LOCAL_DIR."package.zip 不能写入,请检查路径或权限是否正确.<br>");
+		}
 	}
 
 

@@ -46,6 +46,7 @@ if($operation != '') {
 	$targetList   = array_merge($listArray, $includefiles);
 	switch($operation){
 		case 'after MD5 Compare on local':
+		case 'push':
 			$func       = str_replace(' ', '_', $operation);
 			$hiddenform = call_user_func_array(array('SYNC', $func), array($targetList));
 			break;
@@ -108,8 +109,6 @@ FOM;
 		exit;
 		$localdir     = './';
 	} elseif($operation == 'push') {
-		catchthepackage();
-		exit('OK');
 
 	} elseif($operation == 'unzip') {
 		echo $head;
@@ -330,27 +329,6 @@ function packfiles($files) {
 }
 
 
-function catchthepackage() {
-	global $_FILES;
-	if($_FILES["file"]["error"] > 0) {
-		echo "Return Code: ".$_FILES["file"]["error"]."<br />";
-	} else {
-		echo '<br />';
-		echo "Upload: ".$_FILES["file"]["name"]."<br />";
-		echo "Type: ".$_FILES["file"]["type"]."<br />";
-		echo "Size: ".($_FILES["file"]["size"] / 1024)." Kb<br />";
-		echo "Temp file: ".$_FILES["file"]["tmp_name"]."<br />";
-
-		if(file_exists("upload/".$_FILES["file"]["name"])) {
-			echo $_FILES["file"]["name"]." already exists. ";
-		} else {
-			move_uploaded_file($_FILES["file"]["tmp_name"], "./".$_FILES["file"]["name"]);
-			echo "Stored in: "."./".$_FILES["file"]["name"].'<br />';
-
-			dounzip();
-		}
-	}
-}
 
 function dounzip() {
 	$path      = './';
@@ -362,7 +340,7 @@ function dounzip() {
 		$result = $Zip->extract($path.(('./' == $unzippath || '。/' == @$_POST['unzippath']) ? '' : $unzippath), $remove);
 		if($result) {
 			$statusCode = 200;
-			info($zip);
+			info($Zip);
 			//$message .= '<font color="green">解压总计耗时：</font><font color="red">' . G('_run_start', '_run_end', 6) . ' 秒</font><br />';
 		} else {
 			$statusCode = 300;
