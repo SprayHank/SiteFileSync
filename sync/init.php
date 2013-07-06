@@ -10,7 +10,7 @@
 //
 spl_autoload_register('sync_autoload');
 function sync_autoload($class) {
-	$cls = dirname(__FILE__).'/class/'.$class.'.class.php';
+	$cls = dirname(__FILE__).'/../SyncClass/'.$class.'.Class.php';
 	is_file($cls) && is_readable($cls) && require($cls); //目标为文件（非目录），可读，载入
 }
 
@@ -29,7 +29,7 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 	$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
 }
 require dirname(__FILE__).'/config.php';
-SYNC::init_ignores();
+Sync::init_ignores();
 GLOBAL $IGNORES;
 $submit = '';
 isset($_REQUEST['submit']) && $submit = $_REQUEST['submit'];
@@ -38,7 +38,7 @@ isset($_REQUEST['operation']) && $operation = $_REQUEST['operation'];
 $do = '';
 isset($_REQUEST['do']) && $do = $_REQUEST['do'];
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-$operation == '' && $submit == '' && exit(SYNC::init_page());
+$operation == '' && $submit == '' && exit(Sync::init_page());
 if($operation != '') {
 	$includefiles = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
 	$list         = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
@@ -48,7 +48,7 @@ if($operation != '') {
 		case 'after MD5 Compare on local':
 		case 'push':
 			$func       = str_replace(' ', '_', $operation);
-			$hiddenform = call_user_func_array(array('SYNC', $func), array($targetList));
+			$hiddenform = call_user_func_array(array('Sync', $func), array($targetList));
 			break;
 		default:
 			exit('Unkonwn operation');

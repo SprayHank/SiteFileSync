@@ -1,6 +1,6 @@
 <?php defined('SYNCSYSTEM') || die('No direct script access.');
 
-SYNC::$CONFIG['IGNORE_FILE_LIST'] = array(
+Sync::$CONFIG['IGNORE_FILE_LIST'] = array(
 	'.git*',
 	'*.md',
 	'*.markdown',
