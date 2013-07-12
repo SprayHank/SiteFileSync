@@ -11,7 +11,7 @@
 spl_autoload_register('sync_autoload');
 function sync_autoload($class) {
 	$cls = dirname(__FILE__).'/../SyncClass/'.$class.'.Class.php';
-	is_file($cls) && is_readable($cls) && require($cls); //目标为文件（非目录），可读，载入
+	is_file($cls) && is_readable($cls) && include($cls); //目标为文件（非目录），可读，载入
 }
 
 //兼容转义字符处理
