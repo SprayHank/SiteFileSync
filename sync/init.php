@@ -11,7 +11,7 @@
 spl_autoload_register('sync_autoload');
 function sync_autoload($class) {
 	$cls = dirname(__FILE__).'/../SyncClass/'.$class.'.Class.php';
-	is_file($cls) && is_readable($cls) && include($cls); //目标为文件（非目录），可读，载入
+	is_file($cls) && is_readable($cls) && include($cls) || exception($cls); //目标为文件（非目录），可读，载入
 }
 
 //兼容转义字符处理
@@ -29,12 +29,9 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 require dirname(__FILE__).'/config.php';
 Sync::init_ignores();
 GLOBAL $IGNORES;
-$submit = '';
-isset($_REQUEST['submit']) && $submit = $_REQUEST['submit'];
-$operation = '';
-isset($_REQUEST['operation']) && $operation = $_REQUEST['operation'];
-$do = '';
-isset($_REQUEST['do']) && $do = $_REQUEST['do'];
+$submit = '' && isset($_REQUEST['submit']) && $submit = $_REQUEST['submit'];
+$operation = '' && isset($_REQUEST['operation']) && $operation = $_REQUEST['operation'];
+$do = '' && isset($_REQUEST['do']) && $do = $_REQUEST['do'];
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 $operation == '' && $submit == '' && exit(Sync::init_page());
 if($operation != '') {
