@@ -7,7 +7,7 @@
 //
 //
 //
-include './../SyncClass/init.php';
+include dirname(dirname(__FILE__)).'/SyncClass/init.php';
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 $operation == '' && $do == '' && $submit == '' && exit(Sync::init_page());
 if($do != '') {
