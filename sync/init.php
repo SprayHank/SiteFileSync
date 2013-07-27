@@ -5,13 +5,13 @@
 //
 //
 //
-//
+define('LOCAL_DIR', "./");
 //
 include dirname(dirname(__FILE__)).'/SyncClass/init.php';
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 $operation == '' && $do == '' && $submit == '' && exit(Sync::init_page());
 if($do != '') {
-	in_array($do, array('after MD5 Compare on local', 'push', 'after upload on local')) || exit('Unkonwn operation');
+	in_array($do, array('after MD5 Compare on local', 'push', 'after upload on local', 'after dnload on local')) || exit('Unkonwn operation');
 	$includefiles = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
 	$list         = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
 	$listArray    = explode(' ', $list);
@@ -61,9 +61,7 @@ FOM;
 <input type='hidden' name='talkingSite' value='tryanderror.cn' />
 <br />
 </form>
-<script type="text/javascript">
-document.getElementById('pull').submit();
-</script>
+<script type="text/javascript">document.getElementById('pull').submit();</script>
 FOM;
 
 			} else {
