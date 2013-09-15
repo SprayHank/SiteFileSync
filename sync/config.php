@@ -7,3 +7,5 @@ Sync::$CONFIG['IGNORE_FILE_LIST'] = array(
 	'Thumbs.db',
 	'*.patch',
 );
+
+Sync::$CONFIG['UPLOAD_LIMIT_SIZE'] = 2 * 1024 * 1024;
